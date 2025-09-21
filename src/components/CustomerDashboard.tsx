@@ -1,0 +1,188 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Product, ShoppingList, ShoppingListItem, User } from '../types';
+import { mockProducts, getShoppingLists, saveShoppingLists } from '../data/mockData';
+
+interface CustomerDashboardProps {
+  user: User;
+  onLogout: () => void;
+}
+
+export default function CustomerDashboard({ user, onLogout }: CustomerDashboardProps) {
+  const [products] = useState<Product[]>(mockProducts);
+  const [cart, setCart] = useState<{ [productId: string]: number }>({});
+  const [myLists, setMyLists] = useState<ShoppingList[]>([]);
+
+  useEffect(() => {
+    const lists = getShoppingLists().filter(list => list.customerId === user.id);
+    setMyLists(lists);
+  }, [user.id]);
+
+  const updateQuantity = (productId: string, quantity: number) => {
+    setCart(prev => ({
+      ...prev,
+      [productId]: Math.max(0, quantity)
+    }));
+  };
+
+  const createShoppingList = () => {
+    const items: ShoppingListItem[] = Object.entries(cart)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([productId, quantity], index) => {
+        const product = products.find(p => p.id === productId)!;
+        return {
+          id: `item-${Date.now()}-${index}`,
+          productId,
+          product,
+          quantity,
+          status: 'pending' as const
+        };
+      });
+
+    if (items.length === 0) {
+      alert('Please add items to your cart first');
+      return;
+    }
+
+    const newList: ShoppingList = {
+      id: `list-${Date.now()}`,
+      customerId: user.id,
+      customerName: user.name,
+      items,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      assignedEmployeeId: '2' // Assign to Jane Employee
+    };
+
+    const allLists = getShoppingLists();
+    const updatedLists = [...allLists, newList];
+    saveShoppingLists(updatedLists);
+    setMyLists(prev => [...prev, newList]);
+    setCart({});
+    alert('Shopping list created successfully!');
+  };
+
+  const getTotalItems = (list: ShoppingList) => {
+    return list.items.reduce((sum, item) => sum + item.quantity, 0);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <h1 className="text-3xl font-bold text-gray-900">Spar - Customer</h1>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-600">Welcome, {user.name}</span>
+              <button
+                onClick={onLogout}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Product Selection */}
+          <div className="lg:col-span-2">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Select Products</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {products.map(product => (
+                <div key={product.id} className="bg-white rounded-lg shadow-md p-4">
+                  <div className="w-full h-32 bg-gray-200 rounded-lg mb-3 flex items-center justify-center">
+                    <span className="text-gray-500 text-sm">Image</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
+                  <p className="text-green-600 font-bold mb-3">€{product.price.toFixed(2)}</p>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => updateQuantity(product.id, (cart[product.id] || 0) - 1)}
+                      className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300"
+                    >
+                      -
+                    </button>
+                    <span className="w-8 text-center">{cart[product.id] || 0}</span>
+                    <button
+                      onClick={() => updateQuantity(product.id, (cart[product.id] || 0) + 1)}
+                      className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cart and My Lists */}
+          <div className="space-y-8">
+            {/* Current Cart */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Current Cart</h3>
+              {Object.entries(cart).filter(([_, quantity]) => quantity > 0).length === 0 ? (
+                <p className="text-gray-500">No items in cart</p>
+              ) : (
+                <div className="space-y-2 mb-4">
+                  {Object.entries(cart)
+                    .filter(([_, quantity]) => quantity > 0)
+                    .map(([productId, quantity]) => {
+                      const product = products.find(p => p.id === productId)!;
+                      return (
+                        <div key={productId} className="flex justify-between items-center">
+                          <span className="text-sm">{product.name}</span>
+                          <span className="text-sm font-semibold">{quantity}x</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+              <button
+                onClick={createShoppingList}
+                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+              >
+                Create Shopping List
+              </button>
+            </div>
+
+            {/* My Shopping Lists */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">My Shopping Lists</h3>
+              {myLists.length === 0 ? (
+                <p className="text-gray-500">No shopping lists yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {myLists.map(list => (
+                    <div key={list.id} className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-semibold">List #{list.id.slice(-6)}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(list.status)}`}>
+                          {list.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">{getTotalItems(list)} items</p>
+                      <p className="text-xs text-gray-500">{new Date(list.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
