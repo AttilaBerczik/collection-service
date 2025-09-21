@@ -104,18 +104,22 @@ export default function CustomerDashboard({ user, onLogout }: CustomerDashboardP
               {products.map(product => (
                 <div key={product.id} className="bg-white rounded-lg shadow-md p-4">
                   <div className="w-full h-32 bg-gray-200 rounded-lg mb-3 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">Image</span>
+                      <img
+                          src={`${product.image}`}
+                          alt={product.name}
+                          className="w-full h-32 object-cover rounded-lg mb-3"
+                      />
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
                   <p className="text-green-600 font-bold mb-3">€{product.price.toFixed(2)}</p>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => updateQuantity(product.id, (cart[product.id] || 0) - 1)}
-                      className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300"
+                      className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600"
                     >
                       -
                     </button>
-                    <span className="w-8 text-center">{cart[product.id] || 0}</span>
+                    <span className="w-8 text-center text-gray-800">{cart[product.id] || 0}</span>
                     <button
                       onClick={() => updateQuantity(product.id, (cart[product.id] || 0) + 1)}
                       className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600"
@@ -143,8 +147,8 @@ export default function CustomerDashboard({ user, onLogout }: CustomerDashboardP
                       const product = products.find(p => p.id === productId)!;
                       return (
                         <div key={productId} className="flex justify-between items-center">
-                          <span className="text-sm">{product.name}</span>
-                          <span className="text-sm font-semibold">{quantity}x</span>
+                          <span className="text-sm text-gray-800">{product.name}</span>
+                          <span className="text-sm font-semibold text-gray-800">{quantity}x</span>
                         </div>
                       );
                     })}
@@ -168,13 +172,13 @@ export default function CustomerDashboard({ user, onLogout }: CustomerDashboardP
                   {myLists.map(list => (
                     <div key={list.id} className="border rounded-lg p-3">
                       <div className="flex justify-between items-start mb-2">
-                        <span className="font-semibold">List #{list.id.slice(-6)}</span>
+                        <span className="font-semibold text-gray-900">List #{list.id.slice(-6)}</span>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(list.status)}`}>
                           {list.status}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600">{getTotalItems(list)} items</p>
-                      <p className="text-xs text-gray-500">{new Date(list.createdAt).toLocaleDateString()}</p>
+                      <p className="text-sm text-gray-800">{getTotalItems(list)} items</p>
+                      <p className="text-xs text-gray-600">{new Date(list.createdAt).toLocaleDateString()}</p>
                     </div>
                   ))}
                 </div>

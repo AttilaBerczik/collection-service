@@ -155,8 +155,8 @@ export default function EmployeeDashboard({ user, onLogout }: EmployeeDashboardP
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="font-bold text-lg">List #{list.id.slice(-6)}</h3>
-                        <p className="text-gray-600">{list.customerName}</p>
+                        <h3 className="font-bold text-lg text-gray-900">List #{list.id.slice(-6)}</h3>
+                        <p className="text-gray-700">{list.customerName}</p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(list.status)}`}>
                         {list.status}
@@ -192,7 +192,7 @@ export default function EmployeeDashboard({ user, onLogout }: EmployeeDashboardP
             {selectedList ? (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold">List Details</h3>
+                  <h3 className="text-xl font-bold text-gray-900">List Details</h3>
                   <button
                     onClick={() => setSelectedList(null)}
                     className="text-gray-500 hover:text-gray-700"
@@ -202,8 +202,8 @@ export default function EmployeeDashboard({ user, onLogout }: EmployeeDashboardP
                 </div>
                 
                 <div className="mb-6">
-                  <h4 className="font-semibold mb-2">Customer: {selectedList.customerName}</h4>
-                  <p className="text-sm text-gray-600">List #{selectedList.id.slice(-6)}</p>
+                  <h4 className="font-semibold mb-2 text-gray-900">Customer: {selectedList.customerName}</h4>
+                  <p className="text-sm text-gray-900">List #{selectedList.id.slice(-6)}</p>
                 </div>
 
                 <div className="space-y-3 mb-6">
@@ -211,9 +211,9 @@ export default function EmployeeDashboard({ user, onLogout }: EmployeeDashboardP
                     <div key={item.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h5 className="font-semibold">{item.product.name}</h5>
-                          <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                          <p className="text-sm text-gray-600">€{item.product.price.toFixed(2)} each</p>
+                          <h5 className="font-semibold text-gray-900">{item.product.name}</h5>
+                          <p className="text-sm text-gray-700">Quantity: {item.quantity}</p>
+                          <p className="text-sm text-gray-700">€{item.product.price.toFixed(2)} each</p>
                         </div>
                         <span className="text-2xl">{getItemStatusIcon(item.status)}</span>
                       </div>
