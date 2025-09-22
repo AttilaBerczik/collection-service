@@ -3,11 +3,11 @@ import { shoppingListService } from '../../../../lib/services';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { action, itemId, status } = await request.json();
-    const listId = params.id;
+    const { id: listId } = await params;
 
     if (action === 'updateItemStatus' && itemId && status) {
       const success = await shoppingListService.updateItemStatus(listId, itemId, status);
