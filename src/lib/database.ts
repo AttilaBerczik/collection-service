@@ -1,39 +1,43 @@
 import { Pool, PoolClient } from 'pg';
 
 class Database {
-  private pool: Pool;
+  private pool: Pool | null = null;
 
-  constructor() {
-    // Load environment variables
-    const connectionString = process.env.DATABASE_URL;
+  private getPool(): Pool {
+    if (!this.pool) {
+      // Load environment variables
+      const connectionString = process.env.DATABASE_URL;
 
-    if (!connectionString) {
-      console.error('DATABASE_URL not found in environment variables');
-      throw new Error('Database configuration missing');
+      if (!connectionString) {
+        console.error('DATABASE_URL not found in environment variables');
+        throw new Error('Database configuration missing');
+      }
+
+      console.log('Initializing database connection...');
+
+      this.pool = new Pool({
+        connectionString,
+        ssl: {
+          rejectUnauthorized: false
+        },
+        // Additional connection settings for Azure
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 30000,
+        max: 10
+      });
+
+      // Handle pool errors
+      this.pool.on('error', (err) => {
+        console.error('Unexpected error on idle client', err);
+      });
     }
 
-    console.log('Initializing database connection...');
-
-    this.pool = new Pool({
-      connectionString,
-      ssl: {
-        rejectUnauthorized: false
-      },
-      // Additional connection settings for Azure
-      connectionTimeoutMillis: 10000,
-      idleTimeoutMillis: 30000,
-      max: 10
-    });
-
-    // Handle pool errors
-    this.pool.on('error', (err) => {
-      console.error('Unexpected error on idle client', err);
-    });
+    return this.pool;
   }
 
   async getClient(): Promise<PoolClient> {
     try {
-      return await this.pool.connect();
+      return await this.getPool().connect();
     } catch (error) {
       console.error('Database connection error:', error);
       throw error;
@@ -54,7 +58,10 @@ class Database {
   }
 
   async close() {
-    await this.pool.end();
+    if (this.pool) {
+      await this.pool.end();
+      this.pool = null;
+    }
   }
 
   // Test connection method
