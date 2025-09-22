@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { User } from "../types";
-import { getCurrentUser } from "../data/mockData";
+import { getCurrentUser } from "../data/apiService";
 import Login from "../components/Login";
 import CustomerDashboard from "../components/CustomerDashboard";
 import EmployeeDashboard from "../components/EmployeeDashboard";
